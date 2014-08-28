@@ -16,7 +16,7 @@ DATABASES = {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'nearanodb',
         'USER': 'omgbbqhax',
-        'PASSWORD': 'invicible92',
+        'PASSWORD': 'xxx',
         'HOST': 'localhost',
         'PORT': '',
     }
