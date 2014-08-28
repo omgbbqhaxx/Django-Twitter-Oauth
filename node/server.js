@@ -4,7 +4,7 @@ var escape = require('escape-html');
 var redis = require("redis"),
 client = redis.createClient();
 var pg = require('pg');
-var conString = "postgres://omgbbqhax:invicible92@localhost/nearanodb";
+var conString = "postgres://omgbbqhax:password@localhost/nearanodb";
 
 var server = http.createServer(function (req, res) {
 	var username = req.url;
