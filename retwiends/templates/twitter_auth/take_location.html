@@ -1,0 +1,72 @@
+<html> 
+<head>
+<title>Nearano.com find your nearby, start chat anonymously.</title>
+<script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+<link rel="stylesheet" href="http://nearano.com/static/css/bootstrap.css">
+</head>          
+                 <script>
+$(document).ready(function(){
+    
+userid = {{ userid }};
+    
+$("#loc").click(function(){
+    $("#sonuc").append('<img src="http://nearano.com/static/ajax-loader.gif">');
+    $("#head-alert").text("Perfect , please wait a moment.");
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(showPosition);
+    } else {
+        x.innerHTML = "Geolocation is not supported by this browser.";
+    }
+    
+    });
+function showPosition(position) {
+  
+   
+    
+    
+    $.ajax({
+     type:'POST',
+     url:'http://nearano.com/locationupdate/',
+     data:{uid: userid, lng: position.coords.longitude, lat :position.coords.latitude },
+     success:function(data){
+	 //$('#alertbox').removeClass().addClass('alert alert-success');
+	  
+          if (data == "welldone") {window.location = "/";   }
+    else {
+	$("#animate-icon").hide();
+	$("#sonuc").text(data);
+	}   
+	 
+  }
+  
+  
+});
+    
+}
+
+
+
+
+
+
+});
+
+
+</script>
+           
+           
+</head>  
+           
+</body>    
+
+<div style="position: relative;width: 400px;top : 80px;" class="container">
+<center>
+<h6 id="head-alert">Please share your location and complate registration.</h6>
+<button type="button" id="loc" class="btn btn-info btn-xs">Share location</button>
+<h1 id="sonuc"></h1>
+
+</center>
+</div>
+
+</body>
+</html>

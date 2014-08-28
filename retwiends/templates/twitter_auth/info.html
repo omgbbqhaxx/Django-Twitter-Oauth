@@ -1,11 +1,362 @@
-{% extends "twitter_auth/base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Nearno.com</title>
+  <meta name="description" content="Find your nearby and start chat anonymously.">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+	<script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>
+	<!--
+	<script src="https://raw.githubusercontent.com/rstacruz/nprogress/master/nprogress.js"></script>
+	<link rel="stylesheet" href="https://raw.githubusercontent.com/rstacruz/nprogress/master/nprogress.css"> -->
+<script type="text/javascript" src="http://nearano.com/static/css/hover/modernizr.custom.55655.js"></script>
 
-	{% block content %}
-		<div id="container">
-			<img src="{{user.profile_image_url}}" />
-			<h3>{{user.name}}</h3>
-			<p>{{user.screen_name}}<p/>      
-			<a href="/logout/" title="logout">logout</a>
-      <h1>{{ yasin }}</h1>
-		</div>
-	{% endblock %}
+	
+<link rel="stylesheet" href="http://nearano.com/static/css/bootstrap.css">
+	<link rel="stylesheet" href="http://nearano.com/static/css/core.css">
+  <link rel="stylesheet" href="http://nearano.com/static/css/font-awesome.min.css">
+  <link rel="stylesheet" href="http://nearano.com/static/css/font.css">
+	<link rel="stylesheet" href="http://nearano.com/static/css/style.css">
+  <link rel="stylesheet" href="http://nearano.com/static/css/plugin.css">
+  <!--[if lt IE 9]>
+    <script src="http://nearano.com/static/js/ie/respond.min.js"></script>
+    <script src="http://nearano.com/static/js/ie/html5.js"></script>
+    <script src="http://nearano.com/static/js/ie/excanvas.js"></script>
+  <![endif]-->
+  
+  <script>
+
+$(document).ready(function(){
+	
+soundManager.setup({
+onready: function() {
+mySound = soundManager.createSound({
+url: 'http://nearano.com/static/sounds/ding.wav'
+});
+}
+});  	
+	
+$(window).bind('beforeunload', function () {
+	return 'Bu sayfadan ayrılırsanız yapmış olduğunuz değişiklikler kaybolacaktır.';
+});	
+
+
+var socket = io('http://nearano.com:8888/');
+userlist = [];
+window.receiver = "";
+
+var firstconnect = true;
+if(firstconnect) {
+
+socket.on('connect', function () {
+socket.emit('load', "{{user.screen_name }}",  "{{ user.profile_image_url }}");
+
+socket.on('userDisc', function(userid){
+$("#"+userid).children("li").remove();
+$("#"+userid).append('<li class="list-group-item">'+
+'<a href="#" class="thumb-small pull-left m-r-small"><img width="40" src="http://nearano.com/static/images/disconnect.jpg" class="img-circle"></a>'+
+'<div><small class="pull-right text-muted"><button class="btn btn-danger btn-xs closer" style="top:-10px;" id="cls-'+userid+'"> <i class="fa fa-times fa-1"></i></button></small>'+
+'<h5 style="margin-top:15px">User disconnect from the server<h5>'+
+'</div></li>');	
+
+});
+
+
+
+socket.on('myMsg', function(userid, usermsg, username , imgim){
+console.log(username);
+
+if(userlist.indexOf(username) ==-1) {
+if (userlist.length == 0) {
+	console.log("ilk");
+	$(".tabbars").append('<li id="tab-'+username+'" class="active mytab"><a href="#'+username+'" data-toggle="tab">'+username+'</a></li>');
+	$(".tab-content").append('<div class="tab-pane active" id="'+username+'"></div>');
+	
+
+	$("#"+username).prepend('<li class="list-group-item">'+
+	'<a href="#" class="thumb-small pull-left m-r-small"><img width="40" src="'+ imgim +'" class="img-circle"></a>'+
+	'<div><small class="pull-right text-muted"><button class="btn btn-danger btn-xs closer" style="top:-10px;" id="cls-'+username+'"> <i class="fa fa-times fa-1"></i></button></small>'+
+	'<h5 style="margin-top:15px">'+ usermsg +'<h5>'+
+	'</div></li>');
+	userlist.push(username);
+	receiver = username;
+	console.log(receiver);
+	mySound.play();
+	
+}else {
+	$(".tabbars").append('<li id="tab-'+username+'" ><a   style="color:red" class="mytab" href="#'+username+'" data-toggle="tab">'+username+'</a></li>');
+	$(".tab-content").append('<div class="tab-pane" id="'+username+'"></div>');
+	
+	
+	$("#"+username).prepend('<li class="list-group-item">'+
+	'<a href="#" class="thumb-small pull-left m-r-small"><img width="40" src="'+ imgim +'" class="img-circle"></a>'+
+	'<div><small class="pull-right text-muted"><button class="btn btn-danger btn-xs closer" style="top:-10px;" id="cls-'+username+'"> <i class="fa fa-times fa-1"></i></button></small>'+
+	'<h5 style="margin-top:15px">'+ usermsg +'<h5>'+
+	'</div></li>');
+	userlist.push(username);
+	mySound.play();
+	
+}
+	
+	
+}else {
+$("#cls-"+username).remove();
+$("#"+username).prepend('<li class="list-group-item">'+
+'<a href="#" class="thumb-small pull-left m-r-small"><img width="40" src="'+ imgim +'" class="img-circle"></a>'+
+'<div><small class="pull-right text-muted"><button class="btn btn-danger btn-xs closer" style="top:-10px;" id="cls-'+username+'"> <i class="fa fa-times fa-1"></i></button></small>'+
+'<h5 style="margin-top:15px">'+ usermsg +'<h5>'+
+'</div></li>');
+	mySound.play();
+if (!$("#tab-"+username ).hasClass("active")) {$("#tab-"+username).children("a").css("color", "red");}
+}
+});
+
+});
+firstconnect = false;
+}else {
+
+socket.socket.reconnect();}
+
+
+
+
+$("#msginput").on("keypress", function(e) {
+    if(e.which == 13) {
+       var x = $("#msginput").val();
+       $("#msginput").val('');
+       if (x && receiver) {
+         socket.emit('userSender', x, receiver);
+	 $("#cls-"+receiver).remove();
+	 $("#"+receiver).prepend('<li class="list-group-item">'+
+	'<a href="#" class="thumb-small pull-left m-r-small"><img width="40" src="{{ user.profile_image_url }}" class="img-circle"></a>'+
+	'<div><small class="pull-right text-muted"><button class="btn btn-danger btn-xs closer" style="top:-10px;" id="cls-'+receiver+'"> <i class="fa fa-times fa-1"></i></button></small>'+
+	'<h5 style="margin-top:15px">'+ x +'<h5>'+
+	'</div></li>');	
+
+	 
+       } 
+    }
+});
+	
+	
+$(".tabbars").on("click", "li", function(){
+  receiver = $(this).children("a").text();
+  //console.log(receiver);
+  $("#tab-"+receiver).children("a").css("color", "#3a5a7a");
+});
+
+$(".tab-content").on("click","button", function(){
+  x = this.id.split("cls-");
+  console.log(x[1]);
+  $("#tab-"+x[1]).remove();
+  $("#"+x[1]).remove();
+  var idx = userlist.indexOf(x[1]);
+  userlist.splice(idx, 1);
+  console.log("splice başarılı " + userlist);
+  
+if (userlist[0]) {
+$("#tab-"+userlist[0]).addClass("active");
+$("#"+userlist[0]).addClass("active");
+$("#tab-"+userlist[0]).click();
+//$("#"+userlist[0]).show();
+receiver = userlist[0];
+console.log("wtf");
+}else {
+receiver = "";
+}
+
+
+
+
+});
+	
+nearby = [];
+usernames = [];
+distances = [];
+shufflecount = 0
+{% for x in shops %}
+
+{% endfor %}
+
+
+{% for x in nearbys %}
+usernames.push("{{x.0}}");	
+distances.push("{{x.1}}");
+nearby.push("{{x.2}}");
+{% endfor %}
+
+
+for(shufflecount; shufflecount <3 ; shufflecount++) {
+if (nearby[shufflecount] ) {
+$(".allpage").append('<div class="inimg">'+ 
+ '<a href="http://nearano.com/'+usernames[shufflecount]+'" target="=blank"> <img  src="'+ nearby[shufflecount] +'">'+
+  '<span class="label label-info">'+ distances[shufflecount] +' km</span></a>'+
+  '</div>');
+			
+	} else {
+	$(".allpage").text("Oh, youre alone :O");
+	$("#loadmore").hide();}
+}
+
+$("#loadmore").click(function(){
+console.log(shufflecount);
+newshuffle = shufflecount+3;
+for(shufflecount; shufflecount < newshuffle ;  shufflecount++) {
+if (nearby[shufflecount] ) {
+
+$(".allpage").append('<div class="inimg">'+ 
+ '<a href="http://nearano.com/'+usernames[shufflecount]+'" target="=blank"> <img  src="'+ nearby[shufflecount] +'">'+
+  '<span class="label label-info">'+ distances[shufflecount] +' km</span></a>'+
+  '</div>');
+
+} else {$("#loadmore").hide();}
+	
+}	
+	
+	
+});
+
+});
+
+</script>
+  
+
+  
+</head>
+<body>
+  <!-- header -->
+	<header id="header" class="navbar">
+		
+	<center> <img src="http://nearano.com/static/images/nearano1.png" style="position:absolute;width:50px;"></center>	
+    <ul class="nav navbar-nav navbar-avatar pull-right">
+	
+	
+      <li class="dropdown">
+        <a href="#" class="dropdown-toggle" style="padding: 10px;" data-toggle="dropdown" >            
+          <span class="hidden-xs-only">{{ user.screen_name}}</span>
+          <span class="thumb-small avatar inline"><img src="{{ user.profile_image_url }}" alt="Mika Sokeil" class="img-circle"></span>
+          <b class="caret hidden-xs-only"></b>
+        </a>
+        <ul class="dropdown-menu pull-right">
+          <!-- <li><a href="#">Settings</a></li> -->
+          
+          
+          <li class="divider"></li>
+          <!-- <li><a href="docs.html">Help</a></li> -->
+          <li><a href="/logout">Logout</a></li>
+        </ul>
+      </li>
+    </ul>
+    
+    
+   
+    <ul class="nav navbar-nav hidden-xs">
+      <li><h4 style="margin-top: 20px;">Share your profile :</h4></li>
+      <li><div class="m-t-small"><a class="btn btn-circle btn-sm btn-twitter" target="_blank" href="https://twitter.com/intent/tweet?text=Find your nearby people and start chat anonymously: http://nearano.com/{{ user.screen_name }}" ><i class="fa fa-twitter"></i></a></div></li>
+      <li><div class="m-t-small"><a class="btn btn-circle btn-sm btn-facebook" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://nearano.com/{{ user.screen_name }}"><i class="fa fa-facebook"></i></a></div></li>
+      <li><div class="m-t-small"><a class="btn btn-circle btn-sm btn-tumblr" target="_blank" href="https://www.tumblr.com/share/link?url=http%3A%2F%2Fnearano.com%2F{{ user.screen_name}}&name=Find+your+nearby+people+and+start+chat+anonymously: ({{user.screen_name}})"><i class="fa fa-tumblr"></i></a></div></li>      
+      <li><div class="m-t-small"><a class="btn btn-circle btn-sm btn-gplus" target="_blank" href="https://plus.google.com/share?hl=tr&url=http://nearano.com/{{ user.screen_name }}"><i class="fa fa-google-plus"></i></a></div></li>      
+    </ul>
+   
+	</header>
+<!-- / header -->
+<!-- nav -->
+<nav id="nav" class="nav-primary hidden-xs">
+<!-- Muhabbbetler burada dönecek -->
+<img style="width:80px;margin-left: 85px; margin-top:30px;" src="{{user.profile_image_url}}" class="img-circle">
+<h3 style="color: white;width:250px;text-align:center;">{{ user.screen_name }}</h3>
+<h6 style="color: white;width:250px;text-align:center;margin-top:20px;">{{ user.description }}</h6>
+
+<div class="allpage">
+	
+	
+	
+</div>
+<center><button id="loadmore" class="btn btn-warning">Load More</button>
+
+</center>
+
+
+
+
+       
+
+
+
+
+
+
+
+
+
+
+</nav>
+<section id="content" class="content-sidebar bg-white">
+<section class="main" style="min-height: 900px;">
+<article style="padding: 10px;" class="comment-item media" id="comment-id-1">
+<a style="padding-top: 10px;" class="pull-left thumb-small avatar"><img class="img-circle" src="{{ user.profile_image_url }}"></a>
+<section class="media-body panel">
+<header class="panel-heading clearfix">
+<input id="msginput" type="text" class="form-control" placeholder="Typing here">
+</header>
+</section>
+</article>
+<ul class="nav nav-tabs m-b-none no-radius tabbars"></ul>
+<div class="tab-content"></div>
+</section>
+
+
+
+<aside class="sidebar bg text-small">
+<a class="twitter-timeline"  href="https://twitter.com/search?q=nearano.com"  data-widget-id="504460786748497920">Tweets about "nearano.com"</a>
+    <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+"://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+
+   
+    
+    
+ <div class="followlist">
+	  <center><h4>Who are your around</h4><center>
+{% for off in offlineusers %}
+ <div class="followcell">
+ <img class="img-circle" src="{{ off.2 }}"> 
+   <h4 class="username">{{ off.0 }}</h4>
+   <h6 class="distance">in {{off.1}} km around</h6>
+   <a href="http://twitter.com/{{ off.0 }}" target="_blank" class="btn btn-info"><i class="fa fa-twitter"></i></a>
+ </div>
+ 
+ 
+  {% endfor %}
+  
+  
+  
+ </div>   
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+</aside>
+</section>
+<!-- Bootstrap -->
+<script src="http://nearano.com/static/js/bootstrap.js"></script>
+<!-- app -->
+<script src="http://nearano.com/static/js/soundmanager2-jsmin.js"></script>
+<script src="http://nearano.com/static/js/app.js"></script>
+<script src="http://nearano.com/static/js/app.plugin.js"></script>
+<script src="http://nearano.com/static/js/app.data.js"></script>
+
+
+</body>
+</html>

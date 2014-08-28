@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{{ uname}} 's nearno profile </title>
+  <meta name="description" content="mobile first, app, web app, responsive, admin dashboard, flat, flat ui">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	  <script src="http://nearano.com/static/js/jquery.min.js"></script>
+	  <script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>
+	<link rel="stylesheet" href="http://nearano.com/static/css/bootstrap.css">
+  <link rel="stylesheet" href="http://nearano.com/static/css/font-awesome.min.css">
+  <link rel="stylesheet" href="http://nearano.com/static/css/font.css">
+	<link rel="stylesheet" href="http://nearano.com/static/css/style.css">
+  <link rel="stylesheet" href="http://nearano.com/static/css/plugin.css">
+  <!--[if lt IE 9]>
+    <script src="http://nearano.com/static/js/ie/respond.min.js"></script>
+    <script src="http://nearano.com/static/js/ie/html5.js"></script>
+    <script src="http://nearano.com/static/js/ie/excanvas.js"></script>
+  <![endif]-->
+  
+    <script>
+
+$(document).ready(function(){
+  
+soundManager.setup({
+onready: function() {
+mySound = soundManager.createSound({
+url: 'http://nearano.com/static/sounds/ding.wav'
+});
+}
+});  
+
+
+  
+$(window).bind('beforeunload', function () {
+	return 'Bu sayfadan ayrılırsanız yapmış olduğunuz değişiklikler kaybolacaktır.';
+});
+
+
+var socket = io('http://nearano.com:8888/');
+var firstconnect = true;
+if(firstconnect) {
+socket.on('connect', function () {
+  
+socket.on('anonDisc', function(userid){
+	
+	console.log("Çıktı" + userid);
+	
+$(".chatmessages").children("li").remove();
+$(".chatmessages").append('<li class="list-group-item">'+
+'<a href="#" class="thumb-small pull-left m-r-small"><img width="40" src="http://nearano.com/static/images/disconnect.jpg" class="img-circle"></a>'+
+'<div><small class="pull-right text-muted"></small>'+
+'<h5 style="margin-top:15px">{{ uname }} disconnect from the server<h5>'+
+'</div></li>');
+$(".text-success").toggleClass('text-success text-danger');
+mySound.play();
+});
+
+socket.on('shareMsg', function(userid, usermsg, username , imgim){
+$(".chatmessages").prepend('<li class="list-group-item">'+
+'<a href="#" class="thumb-small pull-left m-r-small"><img width="40" src="'+ imgim +'" class="img-circle"></a>'+
+'<div><small class="pull-right text-muted">'+username +'</small>'+
+'<h5 style="margin-top:15px">'+ usermsg +'<h5>'+
+'</div></li>');
+mySound.play();
+});
+
+
+});
+firstconnect = false;
+}else {
+socket.socket.reconnect();
+}
+
+	
+	
+
+
+
+$("#msginput").on("keypress", function(e) {
+var firstconn = false;
+if(e.which == 13) {
+var x = $("#msginput").val();
+$("#msginput").val('');
+if (x) {
+if (firstconn) {
+  socket.send(x);
+  $(".chatmessages").prepend('<li class="list-group-item">'+
+  '<a href="#" class="thumb-small pull-left m-r-small"><img width="40" src="http://nearano.com/static/images/ano.png" class="img-circle"></a>'+
+  '<div><small class="pull-right text-muted">{{ uname }} </small>'+
+  '<h5 style="margin-top:15px">'+ x +'<h5>'+
+  '</div></li>');
+}else {
+  socket.emit('load', "{{ uname }}", "http://nearano.com/static/images/ano.png");
+  firstconn = true;
+  socket.send(x);
+  $(".chatmessages").prepend('<li class="list-group-item">'+
+  '<a href="#" class="thumb-small pull-left m-r-small"><img width="40" src="http://nearano.com/static/images/ano.png" class="img-circle"></a>'+
+  '<div><small class="pull-right text-muted">{{ uname }} </small>'+
+  '<h5 style="margin-top:15px">'+ x +'<h5>'+
+  '</div></li>');
+  
+}
+
+
+
+
+} 
+}
+});
+
+	
+});
+	
+  
+</script>
+  
+  
+  
+  
+</head>
+<body>
+  <!-- header -->
+	<header id="header" class="navbar">
+	<center> <img src="http://nearano.com/static/images/nearano1.png" style="position:absolute;width:40px;"></center>	
+    <ul class="nav navbar-nav navbar-avatar pull-right">
+     {% ifequal whoisme "null" %}
+      <li>
+	<div class="m-t-small"><a href="http://nearano.com/auth" class="btn btn-sm btn-info" data-toggle="modal" href="#modal">
+	
+	<i class="fa fa-fw fa-twitter"></i>Register with twitter, yo!</a>
+	
+	</div>
+      </li>
+      {% else %}
+	
+	
+	<li>
+	<div class="m-t-small"><a class="btn btn-sm btn-info" data-toggle="modal" href="#modal">
+	
+	<i class="fa fa-fw fa-home"></i> Go Home</a>
+	
+	</div>
+      </li>
+	
+	{% endifequal %}
+  
+       
+    </ul>
+    
+    
+   
+ 
+   
+	</header>
+  <!-- / header -->
+  
+  
+  
+  <!-- nav -->
+  <nav id="nav" class="nav-primary hidden-xs">
+   <!-- Muhabbbetler burada dönecek -->
+   <img style="width:80px;margin-left: 85px; margin-top:30px;" src="{{ image }}" class="img-circle">
+   <h3 style="color: white;width:250px;text-align:center;">{{ uname }}</h3>
+   
+   <h6 style="color: white;width:250px;text-align:center;margin-top:20px;">{{ bio }}</h6>
+   
+   <center style="margin-top: 40px;"><a href="http://twitter.com/{{ uname }}" target="_blank" class="btn btn-info"><i class="fa fa-twitter"></i> Follow {{ uname }}</a></center>
+  </nav>
+  
+  
+    <section id="content" class="content-sidebar bg-white">
+      
+      <div class="padder">
+        <div class="row">
+          <div class="col-xs-4 bg-primary padder-v">
+            <div class="h2">{{ followers}}</div>
+            Followers
+          </div>
+          <div class="col-xs-4 bg-info padder-v">
+            <div class="h2">{{ chatcount }}</div>
+            Chat
+          </div>
+          <div class="col-xs-4 bg-success padder-v">
+            <div class="h2">25.08.2014</div>
+            Register Date
+          </div>
+        </div>
+      </div>
+      
+      
+      
+      
+   
+    <section class="main" style="min-height: 900px;">
+	
+	<article style="padding: 10px;" class="comment-item media" id="comment-id-1">
+              <a style="padding-top: 10px;" class="pull-left thumb-small avatar"><img class="img-circle" src="http://nearano.com/static/images/nearano1.png"></a>
+              <section class="media-body panel">
+                <header class="panel-heading clearfix">
+		  {% ifequal ustatus "online" %}
+                <input id="msginput" type="text" class="form-control" placeholder="Typing here">
+		  {% else %}
+		<input id="msginput" type="text" class="form-control" placeholder="User seem offline yo !" disabled>
+                {% endifequal %}
+                </header>
+              
+              </section>
+            </article>
+	
+	
+	
+	
+	
+	
+	
+    
+      <ul class="nav nav-tabs m-b-none no-radius">
+	{% ifequal ustatus "online" %}
+        <li class="active "><a href="#all" data-toggle="tab">
+	
+	<div class="pull-left text-success">
+	<i class="fa fa-circle"></i>
+	&nbsp;&nbsp;</div> User Status
+	
+	</a></li>
+	{% else %}
+	  <li class="active "><a href="#all" data-toggle="tab">
+	  
+	<div class="pull-left text-danger">
+	<i class="fa fa-circle"></i>
+	</div> Sorry user offline
+	  </a></li>
+	  {% endifequal %}
+
+      </ul>
+      <div class="tab-content">
+        <div class="tab-pane active" id="all">
+          <ul class="list-group list-normal chatmessages">
+	    
+	    
+          
+         
+          </ul>
+        </div>
+    
+      </div>
+    </section>
+    <!-- /.sidebar -->
+    <!-- .sidebar -->
+    <aside class="sidebar bg text-small">
+      <a class="twitter-timeline"  href="https://twitter.com/search?q=nearano.com"  data-widget-id="504460786748497920">Tweets about "nearano.com"</a>
+    <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+"://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+
+
+      
+    </aside>
+    <!-- /.sidebar -->
+  </section>
+
+  
+  
+  <!--
+  <footer id="footer" style="margin-top:800px;">
+    <div class="text-center padder clearfix">
+      <p>
+        <small>&copy; first 2013, Mobile first web app framework base on Bootstrap</small><br><br>
+        <a href="#" class="btn btn-xs btn-circle btn-twitter"><i class="fa fa-twitter"></i></a>
+        <a href="#" class="btn btn-xs btn-circle btn-facebook"><i class="fa fa-facebook"></i></a>
+        <a href="#" class="btn btn-xs btn-circle btn-gplus"><i class="fa fa-google-plus"></i></a>
+      </p>
+    </div>
+  </footer>
+  <a href="#" class="hide slide-nav-block" data-toggle="class:slide-nav slide-nav-left" data-target="body"></a>
+ 
+  -->
+  
+	
+  <!-- Bootstrap -->
+  <script src="http://nearano.com/static/js/bootstrap.js"></script>
+  <!-- app -->
+  <script src="http://nearano.com/static/js/app.js"></script>
+  <script src="http://nearano.com/static/js/soundmanager2-jsmin.js"></script>
+  
+  <script src="http://nearano.com/static/js/app.plugin.js"></script>
+  <script src="http://nearano.com/static/js/app.data.js"></script>
+
+</body>
+</html>

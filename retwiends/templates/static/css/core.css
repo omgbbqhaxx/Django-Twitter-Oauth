@@ -1,0 +1,63 @@
+.allpage {
+  width:250px;
+  padding:0px;
+  margin-top:80px;
+}
+.allpage img {
+  width:80px;
+}
+.inimg{
+  position:relative;
+  width:80px;
+  heigth:80px;
+  float:left;
+ 
+}
+.inimg span {
+  position:absolute;
+  z-index:1;
+  left:10px;
+  top:60px;
+ 
+}
+
+
+
+
+
+
+.followlist {
+  width:220px;
+  height:300px;
+}
+.followcell {
+  width:220px;
+  height:80px;
+  z-index:1;
+ 
+}
+.followcell img {
+  position:relative;
+  width:60px;
+  z-index:1;
+  float:left;
+  top:0px;
+  margin-left: 5px;
+}
+.username {
+  position:relative;
+  top:10px;
+  left:-15px;
+  
+}
+.distance {
+  position:relative;
+  top:8px;
+  left: -15px;
+}
+.followcell a {
+  position:relative;
+  left:80px;
+  top:-40px;
+  
+}
